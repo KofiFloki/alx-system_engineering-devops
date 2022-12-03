@@ -1,0 +1,3 @@
+#!/biv/bash
+mv [[:upper]]* /tmp/u
+
