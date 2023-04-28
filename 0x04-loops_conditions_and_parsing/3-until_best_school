@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+c=10
+until [ $c -eq 0 ]
+do
+  echo "Best School"
+  c=$((c-1))
+done
