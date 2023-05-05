@@ -1,4 +1,4 @@
-!/usr/bin/env bash
+#!/usr/bin/env bash
 #Displays the listening sockets, pid, and name of program the sockets belong to
 
 sudo netstat -tulpn
