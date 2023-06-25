@@ -3,4 +3,4 @@
 # private key named school, number of bits in the created key is 4096
 # created key protected by passphrase betty
 
-ssh-keygen -b 4096 -f school -N betty
+ssh-keygen -t rsa -N betty -f school -b 4096
