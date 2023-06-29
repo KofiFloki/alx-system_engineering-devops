@@ -21,4 +21,4 @@ sudo sed -i "33s|.*|$new_redirect|" /etc/nginx/sites-available/default
 echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html
 sudo sed -i "/$input_after/a$new_input" /etc/nginx/sites-available/default
 
-sudo /etc/init.d/nginx restart
+sudo /etc/init.d/nginx start
