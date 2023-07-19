@@ -1,4 +1,5 @@
-onfigures the given container like the previous
+#!/usr/bin/env bash
+# Configures the given container like the previous
 chmod 644 /etc/nginx/nginx.conf
 sudo sed -i '/#user www-data/a\user nginx;' /etc/nginx/nginx.conf
 sudo sed -i 's/80 default_server/8080 default_server/' /etc/nginx/sites-available/default
