@@ -1,34 +1,31 @@
 #!/usr/bin/python3
 """
-Using https://jsonplaceholder.typicode.com
-returns info about employee TODO progress
-Implemented using recursion
+Uses READ API for a given employee ID,
+Returns information about the employee TODO list
+progress
 """
-import re
 import requests
-import sys
+from sys import argv
 
 
-API = "https://jsonplaceholder.typicode.com"
-"""REST API url"""
-
-
-if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        if re.fullmatch(r'\d+', sys.argv[1]):
-            id = int(sys.argv[1])
-            user_res = requests.get('{}/users/{}'.format(API, id)).json()
-            todos_res = requests.get('{}/todos'.format(API)).json()
-            user_name = OK
-            todos_count = OK
-            todos = list(filter(lambda x: x.get('userId') == id, todos_res))
-            todos_done = list(filter(lambda x: x.get('completed'), todos))
-            print(
-                'Employee {} is done with tasks({}/{}):'.format(
-                    user_name,
-                    len(todos_done),
-                    len(todos)
-                )
-            )
-            for todo_done in todos_done:
-                print('\t {}'.format(todo_done.get('title')))
+if __name__ == "__main__":
+    """prevents from executing when imported"""
+    all_users = requests.get("https://jsonplaceholder.typicode.com/users")
+    for user in all_users.json():
+        if user.get('id') == int(argv[1]):
+            Username = (user.get("name"))
+            break
+    Completed = 0
+    Total = 0
+    Title = []
+    tasks = requests.get("http://jsonplaceholder.typicode.com/todos")
+    for task in tasks.json():
+        if task.get("userId") == int(argv[1]):
+            Total += 1
+            if task.get("completed") is True:
+                Completed += 1
+                Title.append(task.get("title"))
+    print("Employee {} is done with tasks({}/{}):".format(Username, Completed,
+                                                          Total))
+    for task in Title:
+        print("\t {}".format(task))
