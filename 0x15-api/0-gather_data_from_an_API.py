@@ -1,42 +1,39 @@
 #!/usr/bin/env python3
-"""This script uses READ API for a given employee id,
-and returns information about the employees TODO
-list progress. The script takes one argument, which is
-the employee id. The script then makes two requests to
-the JSONPlaceholder API: one to get the user information
-for the given id, and one to get the todos for the given
-id. The script then prints out the employees name, the
-number of todos they have completed, and a list of their
-completed todos. """
+'''
+This program uses the READ API to retrieve information
+about an employees TODOs. The program takes one argument, an
+employee ID. Once the ID is provided, the program will
+retrieve the information from the API and print it to the
+console.'''
+
+## Import necessary modules
 import json
 import requests
-from sys import argv
-def get_user_info(user_id):
-	"""Gets user information from the JSONPlaceholder API."""
-	url = "https://jsonplaceholder.typicode.com/users/{}".format(user_id)
-	response = requests.request("GET", url)
-	return json.loads(response.content.decode("utf-8"))
-def get_todos(user_id):
-	"""Gets todos from the JSONPlaceholder API."""
-	url = "https://jsonplaceholder.typicode.com/todos/"
-	params = {"userId": user_id}
-	response = requests.request("GET", url, params=params)
-	return json.loads(response.content.decode("utf-8"))
-def main():
-	"""Main function."""
-	# Get the user id from the command line arguments. 
-	user_id = int(argv[1])
- # Get the user information for the given id. 
- user_info = get_user_info(user_id)
- # Get the todos for the given id. 
- todos = get_todos(user_id)
- # Print out the employees name. 
- print("Employee: {}". format(user_info["name"]))
- # Print out the numbers of todos completed. 
- completed_todos = len([todo for todo in todos if todo["completed"]]) 
- total_todos = len(todos) 
- print("Completed todos: {}/{}". format(completed_todos, total_todos)) 
- # Print out a list of the completed todos. 
- for todo in todos: 
- if todo["completed"]: 
- print("\
+
+## Define function to retrieve employee information
+def get_employee_information(employee_ID):
+'''This function retrieves employee information from
+the READ API using the provided employee_ID.'''
+
+## Create the request URL
+request_url = f'https://api.mycompany.net/v1/employees/{employee_ID}'
+
+## Make the request
+response = json.loads(requests.request('GET', request_url).content)
+return response
+
+## Define function to print employee information
+def print_employee_information(employee):
+'''This function prints employee information to
+the console.'''
+print('Employee ID:', employee['employeeID'])
+print('Name:', employee['name'])
+print('Department:', employee['department'])
+print('Title:', employee['title'])
+
+## Get employee information from user
+employee_ID = input('Enter employee\'s ID: ')
+employee = get_employee_information(employee_ID)
+
+## Print employee information to console
+print_employee_information(employee)
