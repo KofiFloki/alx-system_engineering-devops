@@ -1,87 +1,42 @@
-#!/usr/bin/python3
-'''A module containing functions for working with the Reddit API.
-'''
 import requests
 
+def sort_histogram(histogram):
+    histogram.sort(key=lambda kv: (-kv[1], kv[0]))
+    for word, count in histogram:
+        print(f"{word}: {count}")
 
-def sort_histogram(histogram={}):
-    '''Sorts and prints the given histogram.
-    '''
-    histogram = list(filter(lambda kv: kv[1], histogram))
-    histogram_dict = {}
-    for item in histogram:
-        if item[0] in histogram_dict:
-            histogram_dict[item[0]] += item[1]
-        else:
-            histogram_dict[item[0]] = item[1]
-    histogram = list(histogram_dict.items())
-    histogram.sort(
-        key=lambda kv: kv[0],
-        reverse=False
-    )
-    histogram.sort(
-        key=lambda kv: kv[1],
-        reverse=True
-    )
-    res_str = '\n'.join(list(map(
-        lambda kv: '{}: {}'.format(kv[0], kv[1]),
-        histogram
-    )))
-    if res_str:
-        print(res_str)
+def count_words(subreddit, word_list, histogram=None, after=None):
+    if histogram is None:
+        histogram = {word: 0 for word in word_list}
 
-
-def count_words(subreddit, word_list, histogram=[], n=0, after=None):
-    '''Counts the number of times each word in a given wordlist
-    occurs in a given subreddit.
-    '''
     api_headers = {
-        'Accept': 'application/json',
-        'User-Agent': ' '.join([
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-            'AppleWebKit/537.36 (KHTML, like Gecko)',
-            'Chrome/97.0.4692.71',
-            'Safari/537.36',
-            'Edg/97.0.1072.62'
-        ])
+        'User-Agent': 'Reddit Keyword Counter'
     }
+
     sort = 'hot'
-    limit = 30
+    limit = 100
     res = requests.get(
-        '{}/r/{}/.json?sort={}&limit={}&count={}&after={}'.format(
-            'https://www.reddit.com',
-            subreddit,
-            sort,
-            limit,
-            n,
-            after if after else ''
-        ),
+        f'https://www.reddit.com/r/{subreddit}/.json?sort={sort}&limit={limit}&after={after}',
         headers=api_headers,
         allow_redirects=False
     )
-    if not histogram:
-        word_list = list(map(lambda word: word.lower(), word_list))
-        histogram = list(map(lambda word: (word, 0), word_list))
+
     if res.status_code == 200:
         data = res.json()['data']
         posts = data['children']
-        titles = list(map(lambda post: post['data']['title'], posts))
-        histogram = list(map(
-            lambda kv: (kv[0], kv[1] + sum(list(map(
-                lambda txt: txt.lower().split().count(kv[0]),
-                titles
-            )))),
-            histogram
-        ))
+        titles = [post['data']['title'] for post in posts]
+
+        for word in word_list:
+            word_lower = word.lower()
+            histogram[word] += sum(title.lower().split().count(word_lower) for title in titles)
+
         if len(posts) >= limit and data['after']:
-            count_words(
-                subreddit,
-                word_list,
-                histogram,
-                n + len(posts),
-                data['after']
-            )
+            count_words(subreddit, word_list, histogram, data['after'])
         else:
-            sort_histogram(histogram)
+            sorted_histogram = sorted(histogram.items(), key=lambda kv: (-kv[1], kv[0]))
+            sort_histogram(sorted_histogram)
     else:
-        return
+        print(f"Error: Unable to fetch data from Reddit API ({res.status_code})")
+
+# Example usage
+count_words("python", ["python", "javascript", "java"])
