@@ -1,46 +1,36 @@
 #!/usr/bin/python3
-'''A module containing functions for working with the Reddit API.
-'''
+"""
+Provides a recursive function that queries the Reddit API
+parses the title of all hot articles and prints a sorted
+count of given keywords.
+"""
 
+from collections import Counter
 import requests
-
-def sort_histogram(histogram):
-    histogram.sort(key=lambda kv: (-kv[1], kv[0]))
-    for word, count in histogram:
-        print(f"{word}: {count}")
-
-def count_words(subreddit, word_list, histogram=None, after=None):
-    if histogram is None:
-        histogram = {word: 0 for word in word_list}
-
-    api_headers = {
-        'User-Agent': 'Reddit Keyword Counter'
-    }
-
-    sort = 'hot'
-    limit = 100
-    res = requests.get(
-        f'https://www.reddit.com/r/{subreddit}/.json?sort={sort}&limit={limit}&after={after}',
-        headers=api_headers,
-        allow_redirects=False
-    )
-
-    if res.status_code == 200:
-        data = res.json()['data']
-        posts = data['children']
-        titles = [post['data']['title'] for post in posts]
-
-        for word in word_list:
-            word_lower = word.lower()
-            histogram[word] += sum(title.lower().split().count(word_lower) for title in titles)
-
-        if len(posts) >= limit and data['after']:
-            count_words(subreddit, word_list, histogram, data['after'])
-        else:
-            sorted_histogram = sorted(histogram.items(), key=lambda kv: (-kv[1], kv[0]))
-            sort_histogram(sorted_histogram)
+import json
+def count_words(subreddit, word_list):
+    """
+    Queries the Reddit API, parses the title of all hot articles, and prints a sorted count of given keywords (case-insensitive, delimited by spaces. Javascript should count as javascript, but java should not).
+    Args:
+        subreddit (str): The subreddit to query.
+        word_list (list): A list of keywords to search for.
+    """
+    url = "https://www.reddit.com/r/{}.json?limit=10".format(subreddit)
+    response = requests.get(url, headers={'User-Agent': 'My User Agent'})
+    if response.status_code == 200:
+        result = response.json()
+        titles = [item['data']['title'] for item in result['data']['children']]
+        counts = {word: 0 for word in word_list}
+        for title in titles:
+            for word in word_list:
+                if word.lower() in title.lower():
+                    counts[word] += 1
+        sorted_counts = sorted(counts.items(), key=lambda x: (-x[1], x[0]))
+        for word, count in sorted_counts:
+            print(word, count)
     else:
-        print(f"Error: Unable to fetch data from Reddit API ({res.status_code})")
-
-# Example usage
-count_words("python", ["python", "javascript", "java"])
+        print('Invalid subreddit.')
+if __name__ == '__main__':
+    subreddit = input('Enter a subreddit: ')
+    word_list = input('Enter a list of words, separated by spaces: ').split()
+    count_words(subreddit, word_list)
